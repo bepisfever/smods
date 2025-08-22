@@ -2371,3 +2371,28 @@ function Card:set_ability(center, initial, delay_sprites)
 		SMODS.calculate_context({setting_ability = true, old = old_center.key, new = self.config.center_key, other_card = self, unchanged = old_center.key == self.config.center.key})
 	end
 end
+
+local set_seal_ref = Card.set_seal
+function Card:set_seal(_seal, silent, immediate)
+    if self.seal then
+        if G.P_SEALS[self.seal] and G.P_SEALS[self.seal].remove then
+            G.P_SEALS[self.seal]:remove(self)
+        end
+    end
+    local ret = set_seal_ref(self, _seal, silent, immediate)
+    if G.P_SEALS[_seal] and G.P_SEALS[_seal].apply then
+        G.P_SEALS[_seal]:apply(self)
+    end
+    return ret
+end
+
+local card_remove_ref = Card.remove
+function Card:remove()
+    local ret = card_remove_ref(self)
+    if self.seal then
+        if G.P_SEALS[self.seal] and G.P_SEALS[self.seal].remove then
+            G.P_SEALS[self.seal]:remove(self)
+        end
+    end
+    return ret
+end
